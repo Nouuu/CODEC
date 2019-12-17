@@ -11,9 +11,9 @@ var fileBinSize;
 var fileBinTraitmentSize;
 var key;
 
-//TODO rajouter la fonction save(ArrayBuffer, fileName){}
 
 function readFile() {
+    clearLog();
     const t0 = performance.now();
     fileBin = [];
     let file = document.getElementById("input").files[0];
@@ -21,12 +21,13 @@ function readFile() {
         alert("Fichier selectionné invalide !");
         return;
     }
+    log("Reading : " + file.name);
 
-    keyReader.readAsArrayBuffer(file);
+    fileReader.readAsArrayBuffer(file);
 
-    keyReader.onload = function (progressEvent) {
+    fileReader.onload = function () {
 
-        let charCode = new Uint8Array(keyReader.result);
+        let charCode = new Uint8Array(fileReader.result);
         fileBinSize = charCode.length;
 
         for (let i = 0; i < fileBinSize; i++) {
@@ -34,13 +35,12 @@ function readFile() {
         }
 
         const t1 = performance.now();
-        console.clear();
-        console.log(" Read " + readableFileSize(fileBinSize) + " file took " + (t1 - t0).toFixed(2) + " milliseconds");
-        console.log(" ---------------- File Content ----------------: ");
-        console.log(" ------ Showing max 10 array 8 bits pack ------: ");
+        log(" Read " + readableFileSize(fileBinSize) + " file took " + (t1 - t0).toFixed(2) + " milliseconds");
+        log(" ---------------- File Content ----------------: ");
+        log(" ------ Showing max 10 array 8 bits pack ------: ");
 
         for (let i = 0; i < (fileBinSize > 10 ? 10 : fileBinSize); i++) {
-            console.log(fileBin[i]);
+            log(fileBin[i]);
         }
     };
 
@@ -48,15 +48,17 @@ function readFile() {
 
 function readKey() {
 
+    clearLog();
     let file = document.getElementById("key").files[0];
     if (!file) {
-        alert("Fichier selectionné invalide !");
+        key = undefined;
         return;
     }
+    log("Reading key...");
     key = "";
     keyReader.readAsText(file);
 
-    keyReader.onload = function (progressEvent) {
+    keyReader.onload = function () {
         let result = keyReader.result;
         let i = result.search("\\[") + 1;
 
@@ -70,24 +72,36 @@ function readKey() {
         }
 
         key = result;
+        log("Your key is : ");
+        log(key[0].toString());
+        log(key[1].toString());
+        log(key[2].toString());
+        log(key[3].toString());
         fillMatrixCode();
     }
 }
 
 function encodeOpti() {
-    console.clear();
-    console.log("Starting process...");
-    const t0 = performance.now();
-    readKey();
+    const downloadButton = document.getElementById('download');
+    downloadButton.style.visibility = 'hidden';
 
+    clearLog();
     let file = document.getElementById("input").files[0];
     if (!file) {
+
         alert("Fichier selectionné invalide !");
         return;
     }
+    if (key === undefined) {
+        alert("La clé de chiffrement n'a pas été saisi !");
+        return;
+    }
+    log("Starting process...");
+    const t0 = performance.now();
+    log("Encoding : " + file.name);
 
     fileReader.readAsArrayBuffer(file);
-    fileReader.onload = function (progressEvent) {
+    fileReader.onload = function () {
         let charCode = new Uint8Array(fileReader.result);
 
         fileBufferTraitment = new ArrayBuffer(charCode.length * 2);
@@ -105,17 +119,46 @@ function encodeOpti() {
         fileBinTraitmentSize = fileBinTraitment.length;
 
         const t1 = performance.now();
-        console.log("Finished !");
-
-        console.log("Original file : " + readableFileSize(fileBinSize) + " \nEncoded file : " + readableFileSize(fileBinTraitmentSize) + " \nencoding time : " + (t1 - t0).toFixed(5) + " milliseconds");
-        console.log(" ---------------- File Content ----------------: ");
-        console.log(" ------ Showing max 10 array 8 bits pack ------: ");
+        log("Finished !");
+        log("Original file : " + readableFileSize(fileBinSize) + " \nEncoded file : " + readableFileSize(fileBinTraitmentSize) + " \nEncoding time : " + (t1 - t0).toFixed(2) + " milliseconds");
+        log(" ---------------- File Content ----------------: ");
+        log(" ------ Showing max 10 array 8 bits pack ------: ");
 
         for (let i = 0; i < (fileBinTraitmentSize > 10 ? 10 : fileBinTraitmentSize); i++) {
-            console.log(fileBinTraitment[i]);
+            log(fileBinTraitment[i]);
         }
 
+        saveFile(fileBufferTraitment, file.name, 'e');
     }
+}
+
+function saveFile(arrayBuffer, fileName, proccessType) {
+    if (proccessType === 'e') {
+        fileName = fileName + 'e';
+    } else {
+        fileName[fileName.length - 1] = 'd';
+    }
+    const blob = new Blob([arrayBuffer]);
+    if (navigator.msSaveBlob) {
+        navigator.msSaveBlob(blob, fileName);
+    } else {
+        const link = document.getElementById('download');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', fileName);
+            link.style.visibility = 'visible';
+        }
+    }
+}
+
+function log(text) {
+    document.getElementById("logs").value += text + '\n';
+}
+
+function clearLog() {
+    document.getElementById("logs").value = '';
+
 }
 
 function fillByteCode() {
@@ -146,6 +189,7 @@ function fillMatrixCode() {
         }
         matrixCode[i] = [binToDec[tempBin.join('')], binToDec[tempBin2.join('')]];
     }
+    console.log(matrixCode);
 }
 
 function fillBinToDecArray() {
@@ -157,13 +201,13 @@ function fillBinToDecArray() {
 }
 
 function readableFileSize(fileSizeInBytes) {
-    var i = -1;
-    var byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
-    do {
+    var i = 0;
+    var byteUnits = [' B', ' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
+    while (fileSizeInBytes > 1024) {
         fileSizeInBytes = fileSizeInBytes / 1024;
         i++;
-    } while (fileSizeInBytes > 1024);
+    }
 
-    return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
+    return Math.max(fileSizeInBytes, 0.01).toFixed(2) + byteUnits[i];
 }
 
