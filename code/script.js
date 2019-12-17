@@ -1,10 +1,17 @@
 var byteCode = fillByteCode();
-var reader = new FileReader();
-var fileBin;
-var fileBinTraitment = [];
+var matrixCode = [];
+var binToDec = fillBinToDecArray();
+var keyReader = new FileReader();
+var fileReader = new FileReader();
+var fileSaver;
+var fileBin = [];
+var fileBufferTraitment;
+var fileBinTraitment;
 var fileBinSize;
 var fileBinTraitmentSize;
 var key;
+
+//TODO rajouter la fonction save(ArrayBuffer, fileName){}
 
 function readFile() {
     const t0 = performance.now();
@@ -15,11 +22,11 @@ function readFile() {
         return;
     }
 
-    reader.readAsArrayBuffer(file);
+    keyReader.readAsArrayBuffer(file);
 
-    reader.onload = function (progressEvent) {
+    keyReader.onload = function (progressEvent) {
 
-        let charCode = new Uint8Array(reader.result);
+        let charCode = new Uint8Array(keyReader.result);
         fileBinSize = charCode.length;
 
         for (let i = 0; i < fileBinSize; i++) {
@@ -46,12 +53,11 @@ function readKey() {
         alert("Fichier selectionné invalide !");
         return;
     }
-    let reader = new FileReader();
+    key = "";
+    keyReader.readAsText(file);
 
-    reader.readAsText(file);
-
-    reader.onload = function (progressEvent) {
-        let result = reader.result;
+    keyReader.onload = function (progressEvent) {
+        let result = keyReader.result;
         let i = result.search("\\[") + 1;
 
         result = result.slice(i, i + 8 * 4 + 3).split(' ');
@@ -64,55 +70,57 @@ function readKey() {
         }
 
         key = result;
-        console.clear();
-        console.log(key);
+        fillMatrixCode();
     }
 }
 
-function encode() {
-    if (!fileBinSize || !key) {
-        alert("Impossible, il manque un fichier");
+function encodeOpti() {
+    console.clear();
+    console.log("Starting process...");
+    const t0 = performance.now();
+    readKey();
+
+    let file = document.getElementById("input").files[0];
+    if (!file) {
+        alert("Fichier selectionné invalide !");
         return;
     }
-    fileBinTraitment = [];
-    fileBinTraitmentSize = fileBinSize * 2;
 
-    console.clear();
-    console.log("Start encoding...");
-    const t0 = performance.now();
+    fileReader.readAsArrayBuffer(file);
+    fileReader.onload = function (progressEvent) {
+        let charCode = new Uint8Array(fileReader.result);
 
-    let tempBin, tempBin2, i, j;
-    let k = 0;
-    let matLenght = key[0].length;
-    //TODO Créer un tableau contenant les 255 solutions d'encodage possibles dans l'ordre grâce au tableau binaire déjà existant
-    for (i = 0; i < fileBinSize; i++) {
-        tempBin = [];
-        tempBin2 = [];
-        for (j = 0; j < matLenght; j++) {
-            tempBin[j] = (fileBin[i][0] && key[0][j]) ^ (fileBin[i][1] && key[1][j]) ^ (fileBin[i][2] && key[2][j]) ^ (fileBin[i][3] && key[3][j]);
-            tempBin2[j] = (fileBin[i][4] && key[0][j]) ^ (fileBin[i][5] && key[1][j]) ^ (fileBin[i][6] && key[2][j]) ^ (fileBin[i][7] && key[3][j]);
+        fileBufferTraitment = new ArrayBuffer(charCode.length * 2);
+        fileBinTraitment = new Uint8Array(fileBufferTraitment);
+        fileBinSize = charCode.length;
+        let tempArray;
+        let k = 0;
+        for (let i = 0; i < fileBinSize; i++) {
+            tempArray = matrixCode[charCode[i]];
+            fileBinTraitment[k] = matrixCode[charCode[i]][0];
+            fileBinTraitment[k + 1] = matrixCode[charCode[i]][1];
+            k += 2;
         }
-        fileBinTraitment[k] = tempBin;
-        fileBinTraitment[k + 1] = tempBin2;
-        k += 2;
-    }
-    fileBinTraitmentSize = fileBinTraitment.length;
 
-    const t1 = performance.now();
-    console.log("Finished !");
+        fileBinTraitmentSize = fileBinTraitment.length;
 
-    console.log("Original file : " + readableFileSize(fileBinSize) + " \nEncoded file : " + readableFileSize(fileBinTraitmentSize) + " \nencoding time : " + (t1 - t0).toFixed(5) + " milliseconds");
-    console.log(" ---------------- File Content ----------------: ");
-    console.log(" ------ Showing max 10 array 8 bits pack ------: ");
+        const t1 = performance.now();
+        console.log("Finished !");
 
-    for (let i = 0; i < (fileBinTraitmentSize > 10 ? 10 : fileBinTraitmentSize); i++) {
-        console.log(fileBinTraitment[i]);
+        console.log("Original file : " + readableFileSize(fileBinSize) + " \nEncoded file : " + readableFileSize(fileBinTraitmentSize) + " \nencoding time : " + (t1 - t0).toFixed(5) + " milliseconds");
+        console.log(" ---------------- File Content ----------------: ");
+        console.log(" ------ Showing max 10 array 8 bits pack ------: ");
+
+        for (let i = 0; i < (fileBinTraitmentSize > 10 ? 10 : fileBinTraitmentSize); i++) {
+            console.log(fileBinTraitment[i]);
+        }
+
     }
 }
 
 function fillByteCode() {
     let table = [];
-    for (let i = 0; i <= 255; i++) {
+    for (let i = 0; i < 256; i++) {
         let byte = i;
         let bits = [];
         let j = 8;
@@ -120,7 +128,30 @@ function fillByteCode() {
             bits[--j] = byte % 2;
             byte = Math.floor(byte / 2);
         } while (j);
-        table.push(bits);
+        table[i] = bits;
+    }
+    return table;
+}
+
+function fillMatrixCode() {
+    let matLength = key[0].length;
+    let tempBin, tempBin2, i, j, code;
+    for (i = 0; i < 256; i++) {
+        code = byteCode[i];
+        tempBin = [];
+        tempBin2 = [];
+        for (j = 0; j < matLength; j++) {
+            tempBin[j] = (code[0] && key[0][j]) ^ (code[1] && key[1][j]) ^ (code[2] && key[2][j]) ^ (code[3] && key[3][j]);
+            tempBin2[j] = (code[4] && key[0][j]) ^ (code[5] && key[1][j]) ^ (code[6] && key[2][j]) ^ (code[7] && key[3][j]);
+        }
+        matrixCode[i] = [binToDec[tempBin.join('')], binToDec[tempBin2.join('')]];
+    }
+}
+
+function fillBinToDecArray() {
+    let table = [];
+    for (let i = 0; i < 256; i++) {
+        table[byteCode[i].join('')] = i;
     }
     return table;
 }
@@ -135,3 +166,4 @@ function readableFileSize(fileSizeInBytes) {
 
     return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
 }
+
