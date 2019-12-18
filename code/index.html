@@ -2,26 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Coucou</title>
+    <title>Encoding tool</title>
 </head>
 <body>
-<h1>Fichier</h1>
+<h1>File :</h1>
 <input style="margin-bottom: 1em" type="file" id="input"/><br>
 <button onclick="readFile()">Read in console</button>
 
-<h1>Clé</h1>
+<h1>Key :</h1>
 <input onchange="readKey()" value="test" style="margin-bottom: 1em" type="file" id="key"/><br>
 <!--<button onclick="readKey()">Read in console</button>-->
 
 <h1>Actions</h1>
 <button onclick="encodeOpti()">Encode</button>
+<button onclick="decodeOpti()">Decode</button>
 <a id="download" style="visibility: hidden">
     <button>Télécharger</button>
 </a>
 
-<h1>Log</h1>
-<textarea style="width: 500px; height: 450px; background-color: black; color: aliceblue; font-size: 12pt" id="logs" aria-label="logs" readonly>
-
+<h1>Logs</h1>
+<button style="margin-bottom: 1em;" onclick="clearLog()">Clear log</button>
+<br>
+<textarea style="width: 500px; height: 430px; padding: 15px; background-color: black; color: aliceblue; font-size: 12pt"
+          id="logs" aria-label="logs" readonly>
 </textarea>
 <script type="text/javascript" src="./script.js"></script>
 </body>

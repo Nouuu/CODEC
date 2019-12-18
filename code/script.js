@@ -1,68 +1,75 @@
-var byteCode = fillByteCode();
-var matrixCode = [];
-var binToDec = fillBinToDecArray();
+var decToByte = fillDecToByteArray();
+var byteToDec = fillByteToDecArray();
 var keyReader = new FileReader();
 var fileReader = new FileReader();
-var fileSaver;
-var fileBin = [];
+var matrixEncode;
+var matrixDecode;
+var key;
+var fileSize;
 var fileBufferTraitment;
 var fileBinTraitment;
-var fileBinSize;
 var fileBinTraitmentSize;
-var key;
 
 
 function readFile() {
     clearLog();
-    const t0 = performance.now();
-    fileBin = [];
     let file = document.getElementById("input").files[0];
     if (!file) {
         alert("Fichier selectionné invalide !");
         return;
     }
-    log("Reading : " + file.name);
 
+    fileSize = file.size;
     fileReader.readAsArrayBuffer(file);
 
     fileReader.onload = function () {
-
         let charCode = new Uint8Array(fileReader.result);
-        fileBinSize = charCode.length;
+        log("-------------- File information --------------:\n");
+        log("Name          : " + file.name);
+        log("Type          : " + file.type);
+        log("Size          : " + readableFileSize(fileSize));
+        log("Last modified : " + file.lastModifiedDate.toUTCString() + '\n');
+        log("---------------- File Content ----------------:");
+        log("------ Showing max 10 array 8 bits pack ------:\n");
 
-        for (let i = 0; i < fileBinSize; i++) {
-            fileBin[i] = byteCode[charCode[i]];
-        }
-
-        const t1 = performance.now();
-        log(" Read " + readableFileSize(fileBinSize) + " file took " + (t1 - t0).toFixed(2) + " milliseconds");
-        log(" ---------------- File Content ----------------: ");
-        log(" ------ Showing max 10 array 8 bits pack ------: ");
-
-        for (let i = 0; i < (fileBinSize > 10 ? 10 : fileBinSize); i++) {
-            log(fileBin[i]);
+        for (let i = 0; i < (fileSize > 10 ? 10 : fileSize); i++) {
+            log(decToByte[charCode[i]]);
         }
     };
 
 }
 
 function readKey() {
-
     clearLog();
     let file = document.getElementById("key").files[0];
     if (!file) {
         key = undefined;
         return;
     }
-    log("Reading key...");
+    log("Reading key...\n");
     key = "";
     keyReader.readAsText(file);
 
     keyReader.onload = function () {
         let result = keyReader.result;
-        let i = result.search("\\[") + 1;
 
+        let i = result.search("\\[") + 1;
         result = result.slice(i, i + 8 * 4 + 3).split(' ');
+
+        if (result.length !== 4) {
+            alert("invalid key !");
+            log("Invalid key");
+            return;
+        } else {
+            for (i = 0; i < result.length; i++) {
+                if (result[i].length !== 8) {
+                    alert("invalid key !");
+                    log("Invalid key");
+                    return;
+                }
+            }
+        }
+
         for (i = 0; i < result.length; i++) {
             let string = result[i].split('');
             for (let j = 0; j < string.length; j++) {
@@ -72,30 +79,29 @@ function readKey() {
         }
 
         key = result;
-        log("Your key is : ");
+        log("Success !");
+        log("Your key is : \n");
         log(key[0].toString());
         log(key[1].toString());
         log(key[2].toString());
         log(key[3].toString());
-        fillMatrixCode();
+
+        fillMatrixEncode();
+        fillMatrixDecode();
+
+        log("\nReady to encode / decode")
     }
 }
 
 function encodeOpti() {
-    const downloadButton = document.getElementById('download');
-    downloadButton.style.visibility = 'hidden';
-
     clearLog();
-    let file = document.getElementById("input").files[0];
-    if (!file) {
 
-        alert("Fichier selectionné invalide !");
+    hideDownload();
+    let file = checkFileAndKey();
+    if (!file) {
         return;
     }
-    if (key === undefined) {
-        alert("La clé de chiffrement n'a pas été saisi !");
-        return;
-    }
+
     log("Starting process...");
     const t0 = performance.now();
     log("Encoding : " + file.name);
@@ -104,39 +110,101 @@ function encodeOpti() {
     fileReader.onload = function () {
         let charCode = new Uint8Array(fileReader.result);
 
-        fileBufferTraitment = new ArrayBuffer(charCode.length * 2);
+        fileSize = charCode.length;
+        fileBinTraitmentSize = fileSize * 2;
+        fileBufferTraitment = new ArrayBuffer(fileBinTraitmentSize);
         fileBinTraitment = new Uint8Array(fileBufferTraitment);
-        fileBinSize = charCode.length;
-        let tempArray;
+
         let k = 0;
-        for (let i = 0; i < fileBinSize; i++) {
-            tempArray = matrixCode[charCode[i]];
-            fileBinTraitment[k] = matrixCode[charCode[i]][0];
-            fileBinTraitment[k + 1] = matrixCode[charCode[i]][1];
+
+        for (let i = 0; i < fileSize; i++) {
+            fileBinTraitment[k] = matrixEncode[charCode[i]][0];
+            fileBinTraitment[k + 1] = matrixEncode[charCode[i]][1];
             k += 2;
         }
 
-        fileBinTraitmentSize = fileBinTraitment.length;
-
         const t1 = performance.now();
-        log("Finished !");
-        log("Original file : " + readableFileSize(fileBinSize) + " \nEncoded file : " + readableFileSize(fileBinTraitmentSize) + " \nEncoding time : " + (t1 - t0).toFixed(2) + " milliseconds");
-        log(" ---------------- File Content ----------------: ");
-        log(" ------ Showing max 10 array 8 bits pack ------: ");
-
-        for (let i = 0; i < (fileBinTraitmentSize > 10 ? 10 : fileBinTraitmentSize); i++) {
-            log(fileBinTraitment[i]);
-        }
+        logProcessResult(t0, t1, 'e');
 
         saveFile(fileBufferTraitment, file.name, 'e');
     }
+}
+
+function decodeOpti() {
+    clearLog();
+
+    hideDownload();
+    let file = checkFileAndKey();
+    if (!file) {
+        return;
+    }
+
+    log("Starting process...");
+    const t0 = performance.now();
+    log("Decoding : " + file.name);
+
+    fileReader.readAsArrayBuffer(file);
+    fileReader.onload = function () {
+        let charCode = new Uint8Array(fileReader.result);
+
+        fileSize = charCode.length;
+        fileBinTraitmentSize = fileSize / 2;
+        fileBufferTraitment = new ArrayBuffer(fileBinTraitmentSize);
+        fileBinTraitment = new Uint8Array(fileBufferTraitment);
+
+        let k = 0;
+        for (let i = 0; i < fileSize; i += 2) {
+            fileBinTraitment[k] = matrixDecode[charCode[i]][charCode[i + 1]];
+            k++;
+        }
+
+        const t1 = performance.now();
+        logProcessResult(t0, t1, 'd');
+
+        saveFile(fileBufferTraitment, file.name, 'd');
+    }
+
+}
+
+function logProcessResult(t0, t1, type) {
+
+    log("Finished !\n");
+    log((type === 'e' ? "Original" : "Encoded") + " file size : " + readableFileSize(fileSize));
+    log((type === 'e' ? "Encoded" : "Decoded") + " file size : " + readableFileSize(fileBinTraitmentSize));
+    log((type === 'e' ? "\nEncoding" : "\nDecoding") + " time : " + (t1 - t0).toFixed(2) + " milliseconds\n");
+    log("---------------- File Content ----------------: ");
+    log("------ Showing max 10 array 8 bits pack ------: \n");
+
+    for (let i = 0; i < (fileBinTraitmentSize > 10 ? 10 : fileBinTraitmentSize); i++) {
+        log(decToByte[fileBinTraitment[i]]);
+    }
+
+}
+
+function hideDownload() {
+    const downloadButton = document.getElementById('download');
+    downloadButton.style.visibility = 'hidden';
+}
+
+function checkFileAndKey() {
+    let file = document.getElementById("input").files[0];
+    if (!file) {
+        alert("Fichier selectionné invalide !");
+        return false;
+    }
+
+    if (key === undefined || key === "") {
+        alert("La clé de chiffrement n'a pas été saisi !");
+        return false;
+    }
+    return file;
 }
 
 function saveFile(arrayBuffer, fileName, proccessType) {
     if (proccessType === 'e') {
         fileName = fileName + 'e';
     } else {
-        fileName[fileName.length - 1] = 'd';
+        fileName = fileName + 'd';
     }
     const blob = new Blob([arrayBuffer]);
     if (navigator.msSaveBlob) {
@@ -161,7 +229,7 @@ function clearLog() {
 
 }
 
-function fillByteCode() {
+function fillDecToByteArray() {
     let table = [];
     for (let i = 0; i < 256; i++) {
         let byte = i;
@@ -176,26 +244,71 @@ function fillByteCode() {
     return table;
 }
 
-function fillMatrixCode() {
+function fillMatrixEncode() {
+    matrixEncode = [];
     let matLength = key[0].length;
     let tempBin, tempBin2, i, j, code;
     for (i = 0; i < 256; i++) {
-        code = byteCode[i];
+        code = decToByte[i];
         tempBin = [];
         tempBin2 = [];
         for (j = 0; j < matLength; j++) {
             tempBin[j] = (code[0] && key[0][j]) ^ (code[1] && key[1][j]) ^ (code[2] && key[2][j]) ^ (code[3] && key[3][j]);
             tempBin2[j] = (code[4] && key[0][j]) ^ (code[5] && key[1][j]) ^ (code[6] && key[2][j]) ^ (code[7] && key[3][j]);
         }
-        matrixCode[i] = [binToDec[tempBin.join('')], binToDec[tempBin2.join('')]];
+        matrixEncode[i] = [byteToDec[tempBin.join('')], byteToDec[tempBin2.join('')]];
     }
-    console.log(matrixCode);
 }
 
-function fillBinToDecArray() {
+function fillMatrixDecode() {
+    matrixDecode = [];
+    let i, j, k, i4, byte;
+    for (i = 0; i < 256; i++) {
+        matrixDecode[i] = [];
+    }
+    console.log(key);
+    let matrixI4 = [];
+    for (i = 0; i < key[0].length; i++) {
+        i4 = "";
+        for (j = 0; j < key.length; j++) {
+            i4 += key[j][i];
+        }
+        switch (i4) {
+            case "1000":
+                matrixI4[0] = i;
+                break;
+            case "0100":
+                matrixI4[1] = i;
+                break;
+            case "0010":
+                matrixI4[2] = i;
+                break;
+            case "0001":
+                matrixI4[3] = i;
+                break;
+            default:
+                break;
+        }
+    }
+
+    for (i = 0; i < 256; i++) {
+        for (j = 0; j < 256; j++) {
+            byte = [];
+            for (k = 0; k < 4; k++) {
+                byte[k] = decToByte[i][matrixI4[k]];
+            }
+            for (k = 0; k < 4; k++) {
+                byte[k + 4] = decToByte[j][matrixI4[k]];
+            }
+            matrixDecode[i][j] = byteToDec[byte.join('')];
+        }
+    }
+}
+
+function fillByteToDecArray() {
     let table = [];
     for (let i = 0; i < 256; i++) {
-        table[byteCode[i].join('')] = i;
+        table[decToByte[i].join('')] = i;
     }
     return table;
 }
