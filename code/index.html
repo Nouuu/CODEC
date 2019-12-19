@@ -6,28 +6,35 @@
     <link rel="stylesheet" href="./css/bootstrap.min.css">
 </head>
 <body>
-<h1>File :</h1>
-<input style="margin-bottom: 1em" type="file" id="input"/><br>
-<button onclick="readFile()">Read in console</button>
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-lg-3">
+            <h1>File :</h1>
+            <input style="margin-bottom: 1em" type="file" id="input"/><br>
+            <button onclick="readFile()">Read in console</button>
+        </div>
+        <div class="col-lg-3">
+            <h1>Key :</h1>
+            <input onchange="readKey()" value="test" style="margin-bottom: 1em" type="file" id="key"/><br>
+            <!--<button onclick="readKey()">Read in console</button>-->
+        </div>
+    </div>
 
-<h1>Key :</h1>
-<input onchange="readKey()" value="test" style="margin-bottom: 1em" type="file" id="key"/><br>
-<!--<button onclick="readKey()">Read in console</button>-->
+    <h1>Actions</h1>
+    <button onclick="encodeOpti()">Encode</button>
+    <button onclick="decodeOpti()">Decode</button>
+    <a id="download" style="visibility: hidden">
+        <button>Télécharger</button>
+    </a>
 
-<h1>Actions</h1>
-<button onclick="encodeOpti()">Encode</button>
-<button onclick="decodeOpti()">Decode</button>
-<a id="download" style="visibility: hidden">
-    <button>Télécharger</button>
-</a>
-
-<h1>Logs</h1>
-<button style="margin-bottom: 1em;" onclick="clearLog()">Clear log</button>
-<br>
-<textarea style="width: 500px; height: 430px; padding: 15px; background-color: black; color: aliceblue; font-size: 12pt"
-          id="logs" aria-label="logs" readonly>
+    <h1>Logs</h1>
+    <button style="margin-bottom: 1em;" onclick="clearLog()">Clear log</button>
+    <br>
+    <textarea
+            style="width: 500px; height: 430px; padding: 15px; background-color: black; color: aliceblue; font-size: 12pt"
+            id="logs" aria-label="logs" readonly>
 </textarea>
-<script src="./js/bootstrap.bundle.min.js"></script>
+</div>
 <script src="./js/jquery-3.0.0.min.js"></script>
 <script src="./js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./script.js"></script>
