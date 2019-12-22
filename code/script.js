@@ -33,7 +33,7 @@ function readFile() {
         log("------ Showing max 10 array 8 bits pack ------:\n");
 
         for (let i = 0; i < (fileSize > 10 ? 10 : fileSize); i++) {
-            log(decToByte[charCode[i]]);
+            log(decToByte[charCode[i]] + "\t=>\t" + String.fromCharCode(charCode[i]));
         }
     };
 
@@ -46,7 +46,7 @@ function readKey() {
         key = undefined;
         return;
     }
-    log("Reading key...\n");
+    log("Reading key...");
     key = "";
     keyReader.readAsText(file);
 
@@ -79,7 +79,7 @@ function readKey() {
         }
 
         key = result;
-        log("Success !");
+        log("Success !\n");
         log("Your key is : \n");
         log(key[0].toString());
         log(key[1].toString());
@@ -176,7 +176,7 @@ function logProcessResult(t0, t1, type) {
     log("------ Showing max 10 array 8 bits pack ------: \n");
 
     for (let i = 0; i < (fileBinTraitmentSize > 10 ? 10 : fileBinTraitmentSize); i++) {
-        log(decToByte[fileBinTraitment[i]]);
+        log(decToByte[fileBinTraitment[i]] + "\t=>\t" + String.fromCharCode(fileBinTraitment[i]));
     }
 
 }
