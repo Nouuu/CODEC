@@ -266,7 +266,6 @@ function fillMatrixDecode() {
     for (i = 0; i < 256; i++) {
         matrixDecode[i] = [];
     }
-    console.log(key);
     let matrixI4 = [];
     for (i = 0; i < key[0].length; i++) {
         i4 = "";
