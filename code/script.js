@@ -15,7 +15,7 @@ function readFile() {
     clearLog();
     let file = document.getElementById("input").files[0];
     if (!file) {
-        alert("Fichier selectionné invalide !");
+        alert("Fichier sélectionné invalide !");
         return;
     }
 
@@ -57,13 +57,13 @@ function readKey() {
         result = result.slice(i, i + 8 * 4 + 3).split(' ');
 
         if (result.length !== 4) {
-            alert("invalid key !");
+            alert("Invalid key!");
             log("Invalid key");
             return;
         } else {
             for (i = 0; i < result.length; i++) {
                 if (result[i].length !== 8) {
-                    alert("invalid key !");
+                    alert("Invalid key!");
                     log("Invalid key");
                     return;
                 }
@@ -79,8 +79,8 @@ function readKey() {
         }
 
         key = result;
-        log("Success !\n");
-        log("Your key is : \n");
+        log("Success!\n");
+        log("Your key is: \n");
         log(key[0].toString());
         log(key[1].toString());
         log(key[2].toString());
@@ -141,7 +141,7 @@ function decodeOpti() {
 
     log("Starting process...");
     const t0 = performance.now();
-    log("Decoding : " + file.name);
+    log("Decoding: " + file.name);
 
     fileReader.readAsArrayBuffer(file);
     fileReader.onload = function () {
@@ -168,7 +168,7 @@ function decodeOpti() {
 
 function logProcessResult(t0, t1, type) {
 
-    log("Finished !\n");
+    log("Finished!\n");
     log((type === 'e' ? "Original" : "Encoded") + " file size : " + readableFileSize(fileSize));
     log((type === 'e' ? "Encoded" : "Decoded") + " file size : " + readableFileSize(fileBinTraitmentSize));
     log((type === 'e' ? "\nEncoding" : "\nDecoding") + " time : " + (t1 - t0).toFixed(2) + " milliseconds\n");
@@ -189,12 +189,12 @@ function hideDownload() {
 function checkFileAndKey() {
     let file = document.getElementById("input").files[0];
     if (!file) {
-        alert("Fichier selectionné invalide !");
+        alert("Fichier sélectionné invalide !");
         return false;
     }
 
     if (key === undefined || key === "") {
-        alert("La clé de chiffrement n'a pas été saisi !");
+        alert("La clé de chiffrement n'a pas été saisie !");
         return false;
     }
     return file;

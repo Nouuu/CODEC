@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Coucou</title>
+    </head>
+
+    <body>
+
+        <h1>Fichier</h1>
+        <input type="file" onchange="readFile(this)">
+
+        <script>
+            function readFile(input) {
+                let file = input.files[0];
+                let reader = new FileReader();
+
+                reader.readAsArrayBuffer(file);
+
+                reader.onload = function() {
+                    console.log(reader.result);
+                };
+
+                reader.onerror = function() {
+                    console.log(reader.error);
+                };
+            }
+        </script>
+
+    </body>
+</html>

@@ -1,47 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Encoding tool</title>
-    <link rel="stylesheet" href="./css/bootstrap.min.css">
-</head>
-<body class="bg-dark">
-<div class="container mt-3 text-light">
-    <div class="row mb-3">
-        <div class="col-lg-4 col-md-6 mb-1">
-            <h1>File :</h1>
-            <input type="file" id="input" class="mb-2"/>
-            <br>
-            <button class="btn btn-primary" onclick="readFile()">Read in console</button>
-        </div>
-        <div class="col-lg-4 col-md-6">
-            <h1>Key :</h1>
-            <input onchange="readKey()" type="file" id="key"/><br>
-            <!--<button onclick="readKey()">Read in console</button>-->
-        </div>
-    </div>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>File encoding and decoding tool</title>
+        <link rel="stylesheet" href="./css/bootstrap.min.css">
+        <style>
+            h1 {margin: 0 auto;
+                width: 700px;
+                text-align: center;
+                color: white;
+                font-weight: bold;
+                letter-spacing: 4px;
+                word-spacing: 6px;
+                text-shadow: 1px 1px 2px black, 0 0 1em black, 0 0 0.2em white;}
+            #download {visibility: hidden;}
+            textarea {height: 525px; padding: 15px; background-color: black; color: aliceblue; font-size: 12pt;}
+            #main_title {margin-bottom: 5em; margin-top: 2em;}
+            .row {width: 100%;}
+        </style>
+    </head>
 
-    <h1>Actions</h1>
-    <button class="btn btn-danger" onclick="encodeOpti()">Encode</button>
-    <button class="btn btn-success" onclick="decodeOpti()">Decode</button>
-    <a id="download" style="visibility: hidden">
-        <button>Télécharger</button>
-    </a>
+    <body class="bg-dark">
+        <div class="container mt-3 text-light">
 
-    <h1>Logs</h1>
-    <button style="margin-bottom: 1em;" onclick="clearLog()">Clear log</button>
-    <br>
-    <div class="row">
-        <div class="col-lg-8">
-    <textarea
-            style="height: 525px; padding: 15px; background-color: black; color: aliceblue; font-size: 12pt"
-            id="logs" aria-label="logs" readonly
-            class="w-100"></textarea>
+            <div id="main_title"> <h1>FILE ENCODING AND DECODING TOOL</h1> </div>
+
+            <div id="actions" class="row mb-5" style="margin: 0 auto;">
+
+                <div class="row mb-3">
+
+                    <div class="col-6 mb-3">
+                        <h2><b>Step 1:</b> select a file</h2>
+                        <input type="file" id="input" class="mb-2"/><br>
+                        <button class="btn btn-primary" onclick="readFile()">Read in console</button>
+                    </div>
+
+                    <div class="col-6 mb-3">
+                        <h2><b>Step 2:</b> select a key</h2>
+                        <input onchange="readKey()" type="file" id="key"/><br>
+                        <!--<button onclick="readKey()">Read in console</button>-->
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-6 mb-3">
+                        <h2><b>Step 3:</b> select the action</h2>
+                        <button class="btn btn-danger" onclick="encodeOpti()">Encode</button>
+                        <button class="btn btn-success" onclick="decodeOpti()">Decode</button>
+                    </div>
+
+                    <div class="col-6 mb-3">
+                        <h2><b>Step 4:</b> download</h2>
+                        <a id="download"> <button class="btn btn-primary">Download</button> </a>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="log_info" class="row mb-3">
+
+                <div class="col-1">
+                    <h2><b>Logs:</b></h2>
+                </div>
+
+                <div class="col-11">
+                    <button onclick="clearLog()" class="btn btn-primary">Clear log</button>
+                </div>
+
+                <textarea id="logs" aria-label="logs" readonly class="w-100"></textarea>
+
+            </div>
+
         </div>
-    </div>
-</div>
-<script src="./js/jquery-3.0.0.min.js"></script>
-<script src="./js/bootstrap.min.js"></script>
-<script type="text/javascript" src="./script.js"></script>
-</body>
+
+        <script src="./js/jquery-3.0.0.min.js"></script>
+        <script src="./js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="./script.js"></script>
+
+    </body>
 </html>
