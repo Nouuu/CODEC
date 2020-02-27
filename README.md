@@ -1,7 +1,7 @@
 # CODEC
 
-| ![Release Version](https://img.shields.io/github/v/release/Nouuu/CODEC) | ![Release Date](https://img.shields.io/github/release-date/Nouuu/CODEC) | ![Contributors](https://img.shields.io/github/contributors/Nouuu/CODEC) | ![Status](https://img.shields.io/badge/Status-ended-red) |
-|:-----------------------------------------------------------------------:|:-----------------------------------------------------------------------:|:-----------------------------------------------------------------------:|:--------------------------------------------------------:|
+| ![Contributors](https://img.shields.io/github/contributors/Nouuu/CODEC) | ![Status](https://img.shields.io/badge/Status-ended-red) |
+|:-----------------------------------------------------------------------:|:--------------------------------------------------------:|
 
 ## Table of contents
 
