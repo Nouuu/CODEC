@@ -7,40 +7,38 @@
 
 - [Description](#description)
   - [Features](#features)
-  - [How it works](#how-it-works)
+  - [How it works: the theory](#how-it-works-the-theory)
     - [Encoding](#encoding)
     - [Decoding](#decoding)
 - [Usage](#usage)
-  - [Load G4C Matrix](#load-g4c-matrix)
-  - [Load file](#load-file)
-  - [Start encode](#start-encode)
-  - [Start decode](#start-decode)
-- [Code](#code)
-  - [Loading key](#loading-key)
-  - [Fill encoding matrix table](#fill-encoding-matrix-table)
-  - [Fill decoding matrix table](#fill-decoding-matrix-table)
-  - [File encode process](#file-encode-process)
-  - [File decode process](#file-decode-process)
+  - [Load the G4C Matrix](#load-the-g4c-matrix)
+  - [Load the file](#load-the-file)
+  - [Start the encoding process](#start-the-encoding-process)
+  - [Start the decode process](#start-the-decoding-process)
+- [Code: how the program works](#code-how-the-program-works)
+  - [Loading the key](#loading-the-key)
+  - [Fill the encoding matrix table](#fill-the-encoding-matrix-table)
+  - [Fill the decoding matrix table](#fill-the-decoding-matrix-table)
+  - [File encoding process](#file-encoding-process)
+  - [File decoding process](#file-decoding-process)
 - [Authors](#authors)
 
 
 ## Description
 
-This application is G4C Matrix encryption program developed in
-JavaScript.
+This application is G4C Matrix encryption program developed in JavaScript.
 
 ### Features
 
-| Feature     | Description                                   |
-|:------------|:----------------------------------------------|
-| Encode file | Encode the give file the the given G4C Matrix |
-| Decode file | Encode the give file the the given G4C Matrix |
+| Feature     | Description                           |
+|:------------|:--------------------------------------|
+| Encode file | Encode a file with a given G4C Matrix |
+| Decode file | Encode a file with a given G4C Matrix |
 
-### How it works
+### How it works: the theory
 
-Basically, we will use a G4C encoding matrix (matrix of 4 lines each
-containing the value of one bytes expressed in 8 bits) which we will
-load from a text file in this format :
+We will use a G4C encoding matrix (matrix of 4 lines, each containing the value of
+one byte expressed with 8 bits) which we will load from a text file in this format:
 
 `G4C=[10001111 11000111 10100100 10010010]`
 
@@ -48,109 +46,107 @@ load from a text file in this format :
 #### Encoding
 
 We will process the file we want to encode byte per byte by making a
-matrix product with our encoding matrix like this:
+matrix product with our encoding matrix:
 
-- Our matrix : `G4C=[10001111 11000111 10100100 10010010]`
-- Our byte : `1010 0101`
+- Our matrix: `G4C=[10001111 11000111 10100100 10010010]`
+- Our byte: `1010 0101`
 
-We separate our byte in two parts : `1010` and `0101`
-
-And we make a matrix product (in this case this like we do a **XOR**
-between the byte and the matrix)
+First, as we have a 4-line encoding matrix, we separate our byte in two 4-bit parts: `1010` and `0101`.
+Then, we make a matrix product: in the program, it is actually a **XOR** between the byte and the matrix.
 
 | Byte / Matrix |               | 1000 1111<br>1100 0111<br>1010 0100<br>1001 0010 |
 |:-------------:|:-------------:|:-------------------------------------------------|
 |     1010      | :arrow_right: | 0010 1011                                        |
 |     0101      | :arrow_right: | 0101 0101                                        |
 
-Result : `1010 0101` => `0010 1011 0101 0101`  
-So as we see, we have one byte in input and we get 2 encoded byte at the
-output.  
-That mean our output file will be twice bigger than the input one.
+Result: `10100101` is coded as `00101011 01010101`  
+As we see, one input byte generates an output of two encoded bytes: this means that
+our encoded output file will be twice bigger than the input source file.
 
 #### Decoding
 
-We will process the file we want to decode 2 byte per 2 byte.
+Since coding a byte leads to getting two encoded byte, the consequence is that we
+will need to process the file we want to decode 2 byte per 2 byte in order to
+get one decoded byte.
 
-The first step is to find our identity matrix in our G4C matrix columns
-:
+The first step is to find the identity matrix in our G4C matrix columns:
 
 |                                    1234 5678                                     | :arrow_right: |                     5234                     |
 |:--------------------------------------------------------------------------------:|:-------------:|:--------------------------------------------:|
 | 1**000** **1**111<br>1**100** **0**111<br>1**010** **0**100<br>1**001** **0**010 | :arrow_right: | **1**000<br>0**1**00<br>00**1**0<br>000**1** |
 
-Once we got the position of the column **(5234)** we save it.  
-We take the previously encoded byte `0010 1011 0101 0101`.  
-For each byte, we take the four bits corresponding to the columns we
-saved :
+Once we've identified the identity columns, we save their positions: here, it's **(5-2-3-4)**.  
+Back to our previously encoded byte that generated these two bytes: `00101011 01010101`.
+For each of these two encoded bytes, we will select the bits located at the 5th, 2nd, 3rd and 4th position,
+and then concatenate them to get back to a 8-bits decoded byte.
 
 |   1234 5678   | :arrow_right: |   5234   |
 |:-------------:|:-------------:|:--------:|
 | 0**010 1**011 | :arrow_right: | **1010** |
 | 0**101 0**101 | :arrow_right: | **0101** |
 
-Et voilà !  
-We decoded these two byte and recovered our original one : `1010 0101`
+And voilà!  
+We've just decoded these two bytes and recovered our original one: `1010 0101`
 
 
 ## Usage
 
-The program GUI is pretty simple to understand :
+The program GUI is pretty simple to understand:
 
 ![image_01.png](pictures/image_01.png)
 
-### Load G4C Matrix
+### Load the G4C Matrix
 
-You need to load your G4C matrix text file.  
-:warning: Your key must be in this format : `G4C=[10001111 11000111
+First of all, you need to load your G4C matrix text file.  
+:warning: Your key must be in this format: `G4C=[10001111 11000111
 10100100 10010010]`, otherwise it won't work.
 
 ![image_02.png](pictures/image_02.png)
 
-### Load file
+### Load the file
 
-Then, you can choose the file you want to encode / decode
+Then, choose the file you want to encode or decode:
 
 ![image_03.png](pictures/image_03.png)
 
 
-### Start encode
+### Start the encoding process
 
-Press the **Encode** button (no kidding ! :upside_down_face:) and
+Press the **Encode** button (no kidding! :upside_down_face:) and
 wait...
 
 ![image_05.png](pictures/image_05.png)
 
-Once your file is encoded, a download button appears to choose location
-where to save your file. The encoded file will have **e** letter added
-at the end of the file
+Once your file is encoded, a **Download** button appears to let you choose
+the location of your encoded file: the letter **e** (for "encoded")
+is added at the end of the file extension.
 
 ![image_07.png](pictures/image_07.png)
 
-### Start decode
+### Start the decoding process
 
-Press the **Decode** button (haha again no kidding ! :upside_down_face:)
-and wait (again to !)...
+Press the **Decode** button (haha again, no kidding! :upside_down_face:)
+and wait (again too!)...
 
 ![image_06.png](pictures/image_06.png)
 
-Once your file is decoded, a download button appears to choose location
-where to save your file. The encoded file will have **d** letter added
-at the end of the file
+Once your file is decoded, a **Download** button appears to let you choose
+the location of your decoded file: the letter **d** (for "decoded")
+is added at the end of the file extension.
 
 ![image_08.png](pictures/image_08.png)
 
-## Code
+## Code: how the program works
 
-### Loading key
+### Loading the key
 
-First of all, we need to load our key, otherwise the program won't start
-encoding / decoding process.  
-The key must be in valid format, we will store it in a local array
+First of all, we need to load our key otherwise the program won't start
+the encoding / decoding process.  
+The key must be in valid format and will be stored in a local array
 `key[4][8]`.
 
-Function `function readKey()` in `script.js` open the key text file
-first check valid format of the key :
+The `function readKey()` in `script.js` opens the
+key text file and first checks the valid format of the key:
 
 ```javascript
 function readKey() {
@@ -181,7 +177,7 @@ function readKey() {
         }
 ```
 
-Then, it store the key in our `codecKey[4][8]` array :
+Then, it stores the key in our `key` array:
 
 ```javascript
         for (i = 0; i < result.length; i++) {
@@ -203,19 +199,19 @@ Then, it store the key in our `codecKey[4][8]` array :
 }
 ```
 
-### Fill encoding matrix table
+### Fill the encoding matrix table
 
-During the encoding process, we don't want to process each bytes with
+During the encoding process, we don't want to process each byte of the file with the
 [encoding](#encoding) method.  
-If we think about it, there is only 256 bytes, each input byte give two
-at output.  
-So we will fill a local array `unsigned char encodeMatrix[256][2]` with
+If we think about it, there are only 256 possible values for a byte (0 to 255), and each
+input byte will give two encoded bytes in the output: to speed the process,
+we will fill a local array `matrixEncode` with
 all the possibilities.  
-Then in our encoding process, we just access the right index of the
-array, wich is the value of the byte !
+Then, in our encoding process, we just access the correct index of the
+array which is the value of the byte!
 
-Function `function fillMatrixEncode()` in `script.js` will process the
-256 * 2 bytes possibilities depending of the key:
+The `function fillMatrixEncode()` in `script.js` will process the
+256 * 2 bytes possibilities depending on the key:
 
 ```javascript
 function fillMatrixEncode() {
@@ -236,22 +232,21 @@ function fillMatrixEncode() {
 ```
 
 As we see, we process with a XOR function because a matrix product
-between bits is the same as if we do XOR on these.
+between bits is the same as XOR.
 
-### Fill decoding matrix table
+### Fill the decoding matrix table
 
-During the decoding process, we don't want to process each bytes with
-[decoding](#decoding) method.  
-If we think about it, there is only 256 * 256 combination of bytes when
-we process these two by two.  
-So we will fill a local array `unsigned char decodeMatrix[256][256]`
-with all the possibilities.  
-Then in our decoding process, we just access the right index of the
-array, wich is the value of the first byte for the first array
-dimension, then the second one for the second dimension !
+As for the encoding process, we don't want to process each byte of the file with the
+[decoding](#decoding) during the decoding process. 
+If we think about it, there are only 256 * 256 possible two-byte combinations: to speed
+the process, we fill a local array `matrixDecode` with all the possibilities.  
+Then, during the decoding process, we just access the correct index of the first
+dimension of the array, which is the value of the first byte, then
+the correct index of the second dimension of the array, which is the value of
+the second byte!
 
-Function `function fillMatrixDecode()` in `script.js` will process the
-256 * 256 bytes possibilities depending of the key:
+The `function fillMatrixDecode()` in `script.js` will process the
+256 * 256 bytes possibilities depending on the key:
 
 ```javascript
 function fillMatrixDecode() {
@@ -283,9 +278,9 @@ function fillMatrixDecode() {
     }
 ```
 
-As we say in [decoding](#decoding), the first step is to find our
+As explained in the [decoding](#decoding) theoretical section, the first step is to find our
 identity matrix in our G4C matrix columns. Once we have it, we can
-continue :
+continue:
 
 ```javascript
     for (i = 0; i < 256; i++) {
@@ -303,14 +298,14 @@ continue :
 }
 ```
 
-As we see, wee fill our two dimensional array with all the
-possibilities, depending of our identity matrix.
+As we see, we fill our two dimensional array with all the
+possibilities, depending on our identity matrix.
 
-### File encode process
+### File encoding process
 
-For this part, I will just describe the part where we read / write
-bytes, the rest of the function is just classic file processing.  
-Function `function encodeOpti()` in `script.js` will create the encoded
+For this part, we will just focus on the part where we read / write
+bytes, the rest of the function is just classic file processing.   
+The `function encodeOpti()` in `script.js` will create the encoded
 file in memory and link it to the download button.
 
 ```javascript
@@ -341,11 +336,11 @@ function encodeOpti() {
 }
 ```
 
-### File decode process
+### File decoding process
 
-For this part, I will just describe the part where we read / write
+As for the file encoding process, we will just focus on the part where we read / write
 bytes, the rest of the function is just classic file processing.  
-Function `function decodeOpti()` in `script.js` will create the decoded
+The `function decodeOpti()` in `script.js` will create the decoded
 file in memory and link it to the download button.
 
 ```javascript
@@ -381,4 +376,3 @@ This project was carried out in a group of two people, myself included.
 |:-----------------------------------------------------|:-----------------------------------------------------------:|
 | [Joëlle CASTELLI](https://github.com/JoelleCastelli) | ![](https://img.shields.io/github/followers/JoelleCastelli) |
 | [Noé LARRIEU-LACOSTE](https://github.com/Nouuu)      |     ![](https://img.shields.io/github/followers/Nouuu)      |
-
